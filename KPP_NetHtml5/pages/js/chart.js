@@ -1,3 +1,9 @@
+var chart;
+function DrawPointVal(val) {
+    series = chart.series[0];
+    series.addPoint(val, true, false, false);
+
+}
 $(function () {
 
     $(document).ready(function () {
@@ -9,7 +15,7 @@ $(function () {
             }
         });
 
-        var chart = new Highcharts.Chart({            
+        chart = new Highcharts.Chart({            
             chart: {
                 animation: false,
                 renderTo: 'container',
@@ -61,19 +67,34 @@ $(function () {
             }]
         });
 
+
+        var btn0 = document.getElementById('id_0');
+        btn0.onclick = WebSocketTest;
+
+        var btn1 = document.getElementById('id_1');
+        btn1.onclick = DrawPoint;
+        
+        function DrawPoint() {
+            series = chart.series[0];
+            series.addPoint(window.bound.myProperty, true, false, false);
+            
+        }
+
+        
         function WebSocketTest() {
             if ("WebSocket" in window) {
                // alert("WebSocket is supported by your Browser!");
 
                 // Let us open a web socket
-                var ws = new WebSocket("ws://localhost:4649/DataProvider");
+                ws = new WebSocket("ws://localhost:4649/DataProvider");
                 var series;
                 var startdata = false;
                 var xpos = 0;
                 ws.onopen = function () {
                     series = chart.series[0];
-                    chart.setTitle({ text: "Connected - Waiting Data" });                 
-
+                    chart.setTitle({ text: "Connected - Waiting Data" });                    
+                    
+                   // chart.setTitle({ text: bound.MyReadOnlyProperty });
                 };
                 var tick = 0;
                 
@@ -117,6 +138,7 @@ $(function () {
             }
         }
     });
+ 
 });
 
 

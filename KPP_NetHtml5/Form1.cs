@@ -1,4 +1,7 @@
-﻿using System;
+﻿using CefSharp;
+using CefSharp.WinForms;
+using CefSharp.WinForms.Internals;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -16,6 +19,9 @@ namespace KPP_NetHtml5
 {
     public partial class Form1 : Form
     {
+
+        private ChromiumWebBrowser browser;
+
         //        WebSocket ws = new WebSocket("ws://localhost:4649/Echo");
         //     Notifier nf = new Notifier();
 
@@ -25,7 +31,8 @@ namespace KPP_NetHtml5
         public Form1()
         {
             InitializeComponent();
-            InitializeWS();
+            ResizeBegin += (s, e) => SuspendLayout();
+            ResizeEnd += (s, e) => ResumeLayout(true);
         }
 
         private void InitializeWS()
@@ -208,6 +215,7 @@ namespace KPP_NetHtml5
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
+            button3_Click(this, null);
             wssv.Stop();
         }
 
@@ -225,36 +233,119 @@ namespace KPP_NetHtml5
             return Math.Cos(angleradians);
         }
 
+        private bool stopsend = false;
         double x=0;
         private void DoWork()
         {
             Random random = new Random();
             
-            while (true)
+            while (stopsend==false)
             {
                 int randomNumber = random.Next(0, 10);
                 var data = Math.Round(cosd(x),2).ToString().Replace(',','.');
 
-                dp.SendTest(data);
-                x=x+10;
+                //dp.SendTest(data);
+                browser.ExecuteScriptAsync("DrawPointVal("+data.ToString()+");");
+                x =x+10;
                 if (x==360)
                 {
                     x = 0;
 
                 }
-                Thread.Sleep(50);
+                Thread.Sleep(10);
             }
+            stopsend = false;
         }
-
+        Thread workerThread = null;
         private void button2_Click(object sender, EventArgs e)
         {
-            Thread workerThread = new Thread(DoWork);
+            button3.Enabled = true;
+            button2.Enabled = false;
+            workerThread = new Thread(DoWork);
             workerThread.Start();
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            CreateBrowser();
+        }
 
+        private void CreateBrowser()
+        {
+            browser = new ChromiumWebBrowser("file:///C:/Users/automacao.KEYEU/Documents/GitHub/KPP_NetHtml5/KPP_NetHtml5/pages/index.html")
+            {
+                Dock = DockStyle.Fill,
+            };
+            __htmlContainer.Controls.Add(browser);
+
+            browser.LoadingStateChanged += OnBrowserLoadingStateChanged;
+            browser.ConsoleMessage += OnBrowserConsoleMessage;
+            browser.StatusMessage += OnBrowserStatusMessage;
+            browser.TitleChanged += OnBrowserTitleChanged;
+            browser.AddressChanged += OnBrowserAddressChanged;
+            var bdobject = new BoundObject();
+            bdobject.MyProperty = 1;
+            browser.RegisterJsObject("bound", bdobject);
+
+        }
+
+        private void OnBrowserConsoleMessage(object sender, ConsoleMessageEventArgs args)
+        {
+           // DisplayOutput(string.Format("Line: {0}, Source: {1}, Message: {2}", args.Line, args.Source, args.Message));
+        }
+
+        private void OnBrowserStatusMessage(object sender, StatusMessageEventArgs args)
+        {
+         //   this.InvokeOnUiThreadIfRequired(() => statusLabel.Text = args.Value);
+        }
+
+        private void OnBrowserLoadingStateChanged(object sender, LoadingStateChangedEventArgs args)
+        {
+            if (args.IsLoading==false)
+            {
+                browser.ShowDevTools();
+
+            }
+            //SetCanGoBack(args.CanGoBack);
+            //SetCanGoForward(args.CanGoForward);
+
+            //this.InvokeOnUiThreadIfRequired(() => SetIsLoading(!args.CanReload));
+        }
+
+        private void OnBrowserTitleChanged(object sender, TitleChangedEventArgs args)
+        {
+            this.InvokeOnUiThreadIfRequired(() => Text = args.Title);
+        }
+
+        private void OnBrowserAddressChanged(object sender, AddressChangedEventArgs args)
+        {
+            //this.InvokeOnUiThreadIfRequired(() => urlTextBox.Text = args.Address);
+        }
+
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            InitializeWS();
+            button2.Enabled = true;
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            if (workerThread!=null)
+            {
+
+                button2.Enabled = true;
+                button3.Enabled = false;
+                stopsend = true;
+                workerThread.Join();
+                workerThread = null; 
+
+            }
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            browser.ExecuteScriptAsync("DrawPointVal(10);");
         }
     }
 }
