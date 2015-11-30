@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using WebSocketSharp;
@@ -34,6 +35,7 @@ namespace KPP_NetHtml5
 #if DEBUG
             // To change the logging level.
             wssv.Log.Level = LogLevel.Trace;
+            wssv.Log.File = "D:\\wslo.txt";
 
             // To change the wait time for the response to the WebSocket Ping or Close.
             wssv.WaitTime = TimeSpan.FromSeconds(2);
@@ -57,7 +59,7 @@ namespace KPP_NetHtml5
              */
 
             // Not to remove the inactive sessions periodically.
-            //wssv.KeepClean = false;
+            wssv.KeepClean = true;
 
             // To resolve to wait for socket in TIME_WAIT state.
             //wssv.ReuseAddress = true;
@@ -67,6 +69,7 @@ namespace KPP_NetHtml5
             //wssv.AddWebSocketService<Echo>("/Echo",()=>echo);
             wssv.AddWebSocketService<DataProvider>("/DataProvider",()=>dp);
             
+            //wssv.A
             //wssv.WebSocketServices.TryGetServiceHost()
             //wssv.AddWebSocketService<Chat>("/Chat");
 
@@ -101,6 +104,7 @@ namespace KPP_NetHtml5
              */
 
             wssv.Start();
+            //
             if (wssv.IsListening)
             {
                 Console.WriteLine("Listening on port {0}, and providing WebSocket services:", wssv.Port);
@@ -207,9 +211,50 @@ namespace KPP_NetHtml5
             wssv.Stop();
         }
 
+
+    
         private void trackBar1_ValueChanged(object sender, EventArgs e)
         {
-            dp.SendTest(trackBar1.Value.ToString());
+            
+            
+        }
+
+        double cosd(double angle)
+        {
+            double angleradians = angle * Math.PI/ 180.0f;
+            return Math.Cos(angleradians);
+        }
+
+        double x=0;
+        private void DoWork()
+        {
+            Random random = new Random();
+            
+            while (true)
+            {
+                int randomNumber = random.Next(0, 10);
+                var data = Math.Round(cosd(x),2).ToString().Replace(',','.');
+
+                dp.SendTest(data);
+                x=x+10;
+                if (x==360)
+                {
+                    x = 0;
+
+                }
+                Thread.Sleep(50);
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            Thread workerThread = new Thread(DoWork);
+            workerThread.Start();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

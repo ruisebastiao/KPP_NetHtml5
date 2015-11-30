@@ -1,125 +1,122 @@
 $(function () {
-    var series
 
     $(document).ready(function () {
+
         Highcharts.setOptions({
-            global: {
-                useUTC: false
+            lang: {
+                decimalPoint: ',',
+                thousandsSep: '.'
             }
         });
 
-        $('#container').highcharts({
+        var chart = new Highcharts.Chart({            
             chart: {
-                zoomType: 'xy',
-                type: 'spline',
-                animation: Highcharts.svg, // don't animate in old IE
-                marginRight: 10,
+                animation: false,
+                renderTo: 'container',
+                defaultSeriesType: 'line',
                 events: {
-                    load: function () {
-
-                        // set up the updating of the chart each second
-                        series = this.series[0];
-                        setInterval(function () {
-                            var x = (new Date()).getTime(), // current time
-                                y = Math.random();
-                            series.addPoint([x, y], true, true);
-                        }, 1000);
+                    load: function () {                        
+                        WebSocketTest();
                     }
                 }
             },
-            title: {
-                text: 'Live random data'
-            },
-            xAxis: {
-                type: 'datetime',
-                tickPixelInterval: 150
-            },
-            yAxis: {
-                title: {
-                    text: 'Value'
+            plotOptions: {
+                series: {
+                    animation: false
                 },
-                plotLines: [{
-                    value: 0,
-                    width: 1,
-                    color: '#808080'
-                }]
+                line: {
+                    lineWidth: 2,
+                    states: {
+                        hover: {
+                            lineWidth: 3
+                        }
+                    },
+                    marker: {
+                        enabled: false
+                    }                    
+                }
+
+            },
+            yAxis:{
+             //   min: 0,
+              //  max:500,
+                startOnTick: false,
+
+               // tickInterval: 0.1,
+                labels: {
+                    format: '{value:.2f}'
+                }
             },
             tooltip: {
-                formatter: function () {
-                    return '<b>' + this.series.name + '</b><br/>' +
-                        Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' +
-                        Highcharts.numberFormat(this.y, 2);
-                }
+                pointFormat: "Value: {point.y:.2f}"
             },
-            legend: {
-                enabled: false
+            title: {
+                text: 'Not connected to server...'
             },
-            exporting: {
-                enabled: false
-            },
-            series: [{
-                name: 'Random data',
-                data: (function () {
-                    // generate an array of random data
-                    var data = [],
-                        time = (new Date()).getTime(),
-                        i;
 
-                    for (i = -19; i <= 0; i += 1) {
-                        data.push({
-                            x: time + i * 1000,
-                            y: Math.random()
-                        });
-                    }
-                    return data;
-                }())
+           
+            series: [{
+                name: 'Torque Fx Data',
+                data:[]            
             }]
         });
+
+        function WebSocketTest() {
+            if ("WebSocket" in window) {
+               // alert("WebSocket is supported by your Browser!");
+
+                // Let us open a web socket
+                var ws = new WebSocket("ws://localhost:4649/DataProvider");
+                var series;
+                var startdata = false;
+                var xpos = 0;
+                ws.onopen = function () {
+                    series = chart.series[0];
+                    chart.setTitle({ text: "Connected - Waiting Data" });                 
+
+                };
+                var tick = 0;
+                
+                ws.onmessage = function (evt) {
+
+                    if (startdata==false) {
+                        startdata = true;
+                        chart.setTitle({ text: "Connected - Receiving Data" });
+                    }
+
+                    
+                    
+                   // var received_msg = evt.data;
+                    //var intval = parseInt(received_msg, 0);
+                    var y = parseFloat(evt.data);
+                   // var y = Math.cos(intval);
+
+                    //chart.setTitle({ text: "Data:" + y });
+
+                    var shift = series.data.length > 90; // shift if the series is 
+                    // longer than 20
+
+                    // add the point
+                    series.addPoint(y, true, shift, false);
+                    //chart.redraw();
+                    //series.addPoint(, true, true);
+                    
+                    // alert("Message is received...");
+                };
+
+                ws.onclose = function () {
+                    // websocket is closed.
+                    //  alert("Connection is closed...");
+                    chart.setTitle({ text: "Disconnected" });
+                };
+            }
+
+            else {
+                // The browser doesn't support WebSocket
+              // alert("WebSocket NOT supported by your Browser!");
+            }
+        }
     });
-
-
-    function ConnectWebSocket() {
-        if ("WebSocket" in window) {
-            alert("WebSocket is supported by your Browser!");
-
-            // Let us open a web socket
-            var ws = new WebSocket("ws://localhost:4649/DataProvider");
-
-            ws.onopen = function () {
-
-                // set up the updating of the chart each second
-                // var series = this.series[0];
-                /*    setInterval(function () {
-                        var x = (new Date()).getTime(), // current time
-                            y = Math.round(Math.random() * 100);
-                        series.addPoint([x, y], true, true);
-                    }, 1000);*/
-
-                // Web Socket is connected, send data using send()
-                //ws.send("Message to send");
-                // alert("Message is sent...");
-            };
-
-            ws.onmessage = function (evt) {
-                var received_msg = evt.data;
-                var x = (new Date()).getTime(), // current time
-                          y = parseInt(received_msg, 0);
-
-                series.addPoint([x, y], true, true);
-
-                // alert("Message is received...");
-            };
-
-            ws.onclose = function () {
-                // websocket is closed.
-                alert("Connection is closed...");
-            };
-        }
-
-        else {
-            // The browser doesn't support WebSocket
-            alert("WebSocket NOT supported by your Browser!");
-        }
-    }
-
 });
+
+
