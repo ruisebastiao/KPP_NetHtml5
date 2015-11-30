@@ -244,7 +244,7 @@ namespace KPP_NetHtml5
                 int randomNumber = random.Next(0, 10);
                 var data = Math.Round(cosd(x),2).ToString().Replace(',','.');
 
-                //dp.SendTest(data);
+        //        dp.SendTest(data);
                 browser.ExecuteScriptAsync("DrawPointVal("+data.ToString()+");");
                 x =x+10;
                 if (x==360)
@@ -252,7 +252,7 @@ namespace KPP_NetHtml5
                     x = 0;
 
                 }
-                Thread.Sleep(10);
+                Thread.Sleep(50);
             }
             stopsend = false;
         }
@@ -272,7 +272,9 @@ namespace KPP_NetHtml5
 
         private void CreateBrowser()
         {
-            browser = new ChromiumWebBrowser("file:///C:/Users/automacao.KEYEU/Documents/GitHub/KPP_NetHtml5/KPP_NetHtml5/pages/index.html")
+            
+            //browser = new ChromiumWebBrowser("file:///C:/Users/automacao.KEYEU/Documents/GitHub/KPP_NetHtml5/KPP_NetHtml5/pages/index.html")
+            browser = new ChromiumWebBrowser("file:///C:/Users/ruise/Documents/GitHub/KPP_NetHtml5/KPP_NetHtml5/pages/index.html")
             {
                 Dock = DockStyle.Fill,
             };

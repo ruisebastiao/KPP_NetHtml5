@@ -1,7 +1,8 @@
 var chart;
 function DrawPointVal(val) {
     series = chart.series[0];
-    series.addPoint(val, true, false, false);
+    var shift = series.data.length > 1000;
+    series.addPoint(val, true, shift, false);
 
 }
 $(function () {
