@@ -252,7 +252,7 @@ namespace KPP_NetHtml5
                     x = 0;
 
                 }
-                Thread.Sleep(50);
+                Thread.Sleep(30);
             }
             stopsend = false;
         }
@@ -273,8 +273,8 @@ namespace KPP_NetHtml5
         private void CreateBrowser()
         {
             
-            //browser = new ChromiumWebBrowser("file:///C:/Users/automacao.KEYEU/Documents/GitHub/KPP_NetHtml5/KPP_NetHtml5/pages/index.html")
-            browser = new ChromiumWebBrowser("file:///C:/Users/ruise/Documents/GitHub/KPP_NetHtml5/KPP_NetHtml5/pages/index.html")
+            browser = new ChromiumWebBrowser("file:///C:/Users/automacao.KEYEU/Documents/GitHub/KPP_NetHtml5/KPP_NetHtml5/pages/index.html")
+            //browser = new ChromiumWebBrowser("file:///C:/Users/ruise/Documents/GitHub/KPP_NetHtml5/KPP_NetHtml5/pages/index.html")
             {
                 Dock = DockStyle.Fill,
             };
